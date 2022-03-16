@@ -1,19 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.12;
 
-library SafeMath {
-    function add(uint x, uint y) internal pure returns (uint z) {
-        require((z = x + y) >= x, 'ds-math-add-overflow');
-    }
-
-    function sub(uint x, uint y) internal pure returns (uint z) {
-        require((z = x - y) <= x, 'ds-math-sub-underflow');
-    }
-
-    function mul(uint x, uint y) internal pure returns (uint z) {
-        require(y == 0 || (z = x * y) / y == x, 'ds-math-mul-overflow');
-    }
-}
+import "./SafeMath.sol";
 
 library FixedPoint {
     // range: [0, 2**112 - 1]
@@ -72,7 +60,7 @@ library FixedPoint {
     }
 }
 
-interface IUniswapV2Pair {
+interface INetswapPair {
     event Approval(address indexed owner, address indexed spender, uint value);
     event Transfer(address indexed from, address indexed to, uint value);
 
@@ -136,11 +124,11 @@ library OracleLibrary {
         address pair
     ) internal view returns (uint price0Cumulative, uint price1Cumulative, uint32 blockTimestamp) {
         blockTimestamp = currentBlockTimestamp();
-        price0Cumulative = IUniswapV2Pair(pair).price0CumulativeLast();
-        price1Cumulative = IUniswapV2Pair(pair).price1CumulativeLast();
+        price0Cumulative = INetswapPair(pair).price0CumulativeLast();
+        price1Cumulative = INetswapPair(pair).price1CumulativeLast();
 
         // if time has elapsed since the last update on the pair, mock the accumulated price values
-        (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) = IUniswapV2Pair(pair).getReserves();
+        (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast) = INetswapPair(pair).getReserves();
         if (blockTimestampLast != blockTimestamp) {
             // subtraction overflow is desired
             uint32 timeElapsed = blockTimestamp - blockTimestampLast;
@@ -153,40 +141,30 @@ library OracleLibrary {
     }
 }
 
-interface IUniswapV2Factory {
-    event PairCreated(address indexed token0, address indexed token1, address pair, uint256);
+interface INetswapFactory {
+    event PairCreated(address indexed token0, address indexed token1, address pair, uint);
 
     function feeTo() external view returns (address);
-
-    function feeRate() external view returns (uint256);
-
+    function feeRate() external view returns (uint);
     function feeToSetter() external view returns (address);
-    
     function initCodeHash() external view returns (bytes32);
 
     function getPair(address tokenA, address tokenB) external view returns (address pair);
-
-    function allPairs(uint256) external view returns (address pair);
-
-    function allPairsLength() external view returns (uint256);
+    function allPairs(uint) external view returns (address pair);
+    function allPairsLength() external view returns (uint);
 
     function createPair(address tokenA, address tokenB) external returns (address pair);
 
     function setFeeTo(address) external;
-
-    function setFeeRate(uint256) external;
-
+    function setFeeRate(uint) external;
     function setFeeToSetter(address) external;
-    
+
     function sortTokens(address tokenA, address tokenB) external pure returns (address token0, address token1);
-
     function pairFor(address tokenA, address tokenB) external view returns (address pair);
-
     function getReserves(address tokenA, address tokenB) external view returns (uint256 reserveA, uint256 reserveB);
 }
 
-
-contract Oracle {
+contract BaseOracle {
     using FixedPoint for *;
     using SafeMath for uint;
 
@@ -208,11 +186,11 @@ contract Oracle {
 
 
     function update(address tokenA, address tokenB) external {
-        address pair = IUniswapV2Factory(factory).pairFor(tokenA, tokenB);
+        address pair = INetswapFactory(factory).pairFor(tokenA, tokenB);
 
         Observation storage observation = pairObservations[pair];
         uint timeElapsed = block.timestamp - observation.timestamp;
-        require(timeElapsed >= CYCLE, 'Dogeswap Oracle: PERIOD_NOT_ELAPSED');
+        require(timeElapsed >= CYCLE, 'Netswap Oracle: PERIOD_NOT_ELAPSED');
         (uint price0Cumulative, uint price1Cumulative,) = OracleLibrary.currentCumulativePrices(pair);
         observation.timestamp = block.timestamp;
         observation.price0Cumulative = price0Cumulative;
@@ -233,11 +211,11 @@ contract Oracle {
 
 
     function consult(address tokenIn, uint amountIn, address tokenOut) external view returns (uint amountOut) {
-        address pair = IUniswapV2Factory(factory).pairFor(tokenIn, tokenOut);
+        address pair = INetswapFactory(factory).pairFor(tokenIn, tokenOut);
         Observation storage observation = pairObservations[pair];
         uint timeElapsed = block.timestamp - observation.timestamp;
         (uint price0Cumulative, uint price1Cumulative,) = OracleLibrary.currentCumulativePrices(pair);
-        (address token0,) = IUniswapV2Factory(factory).sortTokens(tokenIn, tokenOut);
+        (address token0,) = INetswapFactory(factory).sortTokens(tokenIn, tokenOut);
 
         if (token0 == tokenIn) {
             return computeAmountOut(observation.price0Cumulative, price0Cumulative, timeElapsed, amountIn);

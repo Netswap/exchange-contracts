@@ -39,7 +39,7 @@ module.exports = {
         mnemonic,
       }
     },
-    metis: {
+    testnet: {
       url: 'https://stardust.metis.io/?owner=588',
       accounts: {
         mnemonic,

@@ -13,11 +13,13 @@ contract LPOracle {
     using NetswapMath for uint;
 
     BaseOracle public base;
-    address public USDT = 0xbB06DCA3AE6887fAbF931640f67cab3e3a16F4dC;
-    address public USDC = 0xEA32A96608495e54156Ae48931A7c20f0dcc1a21;
+    address public USDT;
+    address public USDC;
 
-    constructor(BaseOracle _base) public {
+    constructor(BaseOracle _base, address _USDT, address _USDC) public {
         base = _base;
+        USDT = _USDT;
+        USDC = _USDC;
     }
 
     /// @dev Return the value of the given input as USDT per unit, multiplied by 2**112.
@@ -30,7 +32,7 @@ contract LPOracle {
     (uint r0, uint r1, ) = INetswapPair(pair).getReserves();
     uint sqrtK = NetswapMath.sqrt(r0.mul(r1)).fdiv(totalSupply); // in 2**112
     address relative = USDT;
-    if (token0 == USDT || token1 == USDC) {
+    if (token0 == USDT || token1 == USDT) {
         relative = USDC;
     }
     uint px0 = base.consult(token0, 10 ** (IERC20(token0).decimals()), relative); // in 2**112

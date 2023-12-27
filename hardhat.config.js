@@ -8,53 +8,57 @@ config({ path: resolve(__dirname, "./.env") });
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async () => {
-  const accounts = await ethers.getSigners();
+    const accounts = await ethers.getSigners();
 
-  for (const account of accounts) {
-    console.log(account.address);
-  }
+    for (const account of accounts) {
+        console.log(account.address);
+    }
 });
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
 let mnemonic;
-if (!process.env.MNEMONIC) {
-  throw new Error("Please set your MNEMONIC in a .env file");
+let privateKey;
+if (!process.env.MNEMONIC && !process.env.PRIVATE_KEY) {
+    throw new Error("Please set your MNEMONIC or PRIVATE_KEY in a .env file");
 } else {
-  mnemonic = process.env.MNEMONIC;
+    mnemonic = process.env.MNEMONIC;
+    privateKey = process.env.PRIVATE_KEY;
 }
+
+const accounts = privateKey ? [process.env.PRIVATE_KEY] : { mnemonic };
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  solidity: "0.6.12",
-  networks: {
-    hardhat: {
+    solidity: "0.6.12",
+    networks: {
+        hardhat: {
+        },
+        mainnet: {
+            url: 'https://andromeda.metis.io/?owner=1088',
+            accounts,
+        },
+        testnet: {
+            url: 'https://goerli.gateway.metisdevops.link',
+            gasPrice: 1000000000,
+            accounts,
+        },
+        metissepolia: {
+            url: 'https://sepolia.rpc.metisdevops.link',
+            accounts,
+        },
     },
-    mainnet: {
-      url: 'https://andromeda.metis.io/?owner=1088',
-      accounts: {
-        mnemonic,
-      }
+    solidity: {
+        version: "0.6.12",
+        settings: {
+            optimizer: {
+                enabled: true,
+                runs: 9999
+            }
+        }
     },
-    testnet: {
-      url: 'https://goerli.gateway.metisdevops.link',
-      accounts: {
-        mnemonic,
-      },
-      gasPrice: 1000000000,
-    },
-  },
-  solidity: {
-    version: "0.6.12",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 9999
-      }
-    }
-  },
 };
 

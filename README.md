@@ -4,11 +4,11 @@ Exchange contracts for Netswap built on Metis Layer2 Network
 
 ## Deployed Contracts
 
-### Metis StarDust Network(588)
+### Metis Test Network(59901)
 
-- Factory Address: 0xA327674305d490199B76b186Ed360fCad3296949
+- Factory Address: 0xd0Ea9fD2B9E6F7be8663f62647F18bac64300697
 
-- Router Address: 0x19BCFEe83ee0D77158b0c151150aFb0f389E4721
+- Router Address: 0xAd22257C31EEca2874aE059b1a87De0eef070DB9
 
 ### Metis Andromeda Network(1088)
 

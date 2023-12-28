@@ -10,6 +10,8 @@ Exchange contracts for Netswap built on Metis Layer2 Network
 
 - Router Address: 0xAd22257C31EEca2874aE059b1a87De0eef070DB9
 
+- Multicall Address: 0xc5a879f4B969EACC54AF739A55869499F1c17D3b
+
 ### Metis Andromeda Network(1088)
 
 - Factory Address: 0x70f51d68D16e8f9e418441280342BD43AC9Dff9f

@@ -6,11 +6,11 @@ Exchange contracts for Netswap built on Metis Layer2 Network
 
 ### Metis Test Network(59901)
 
-- Factory Address: 0xd0Ea9fD2B9E6F7be8663f62647F18bac64300697
+- Factory Address: 0x5A9D3157c6818C0f2A4D8Dd44769BB7f1173B5Da
 
-- Router Address: 0xAd22257C31EEca2874aE059b1a87De0eef070DB9
+- Router Address: 0xaCCb24357D4ae5F84b8dDB97adaD1b0217383639
 
-- Multicall Address: 0xc5a879f4B969EACC54AF739A55869499F1c17D3b
+- Multicall Address: 0x10D8D7C16828c25bDe08171fdDc3Bb325730114A
 
 ### Metis Andromeda Network(1088)
 

@@ -4,7 +4,7 @@ Exchange contracts for Netswap built on Metis Layer2 Network
 
 ## Deployed Contracts
 
-### Metis Test Network(59901)
+### Metis Test Network(59902)
 
 - Factory Address: 0x5A9D3157c6818C0f2A4D8Dd44769BB7f1173B5Da
 

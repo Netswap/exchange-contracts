@@ -3118,14 +3118,6 @@ eth-query@^2.0.2, eth-query@^2.1.0, eth-query@^2.1.2:
     json-rpc-random-id "^1.0.0"
     xtend "^4.0.1"
 
-eth-sig-util@^1.4.2:
-  version "1.4.2"
-  resolved "https://registry.npm.taobao.org/eth-sig-util/download/eth-sig-util-1.4.2.tgz"
-  integrity sha1-jZWCAsftuq6Dlwf7pvCf8ydgYhA=
-  dependencies:
-    ethereumjs-abi "git+https://github.com/ethereumjs/ethereumjs-abi.git"
-    ethereumjs-util "^5.1.1"
-
 eth-sig-util@^2.5.2:
   version "2.5.4"
   resolved "https://registry.npm.taobao.org/eth-sig-util/download/eth-sig-util-2.5.4.tgz"
@@ -3223,7 +3215,7 @@ ethereum-waffle@^3.2.0, ethereum-waffle@^3.3.0:
     "@ethereum-waffle/provider" "^3.3.0"
     ethers "^5.0.1"
 
-ethereumjs-abi@^0.6.8, ethereumjs-abi@0.6.8:
+ethereumjs-abi@^0.6.8, ethereumjs-abi@0.6.8, "ethereumjs-abi@git+https://github.com/ethereumjs/ethereumjs-abi.git":
   version "0.6.8"
   resolved "https://registry.npm.taobao.org/ethereumjs-abi/download/ethereumjs-abi-0.6.8.tgz"
   integrity sha1-cbwVLbCZ9w5i8Qi3zfyhs2LG/K4=
@@ -3238,13 +3230,6 @@ ethereumjs-abi@0.6.5:
   dependencies:
     bn.js "^4.10.0"
     ethereumjs-util "^4.3.0"
-
-"ethereumjs-abi@git+https://github.com/ethereumjs/ethereumjs-abi.git":
-  version "0.6.8"
-  resolved "git+ssh://git@github.com/ethereumjs/ethereumjs-abi.git#ee3994657fa7a427238e6ba92a84d0b529bbcde0"
-  dependencies:
-    bn.js "^4.11.8"
-    ethereumjs-util "^6.0.0"
 
 ethereumjs-account@^2.0.3:
   version "2.0.5"
@@ -3940,16 +3925,6 @@ fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npm.taobao.org/fs.realpath/download/fs.realpath-1.0.0.tgz"
   integrity sha1-FQStJSMVjKpA20onh8sBQRmU6k8=
-
-fsevents@~2.1.1:
-  version "2.1.3"
-  resolved "https://registry.npm.taobao.org/fsevents/download/fsevents-2.1.3.tgz?cache=0&sync_timestamp=1612537022152&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Ffsevents%2Fdownload%2Ffsevents-2.1.3.tgz"
-  integrity sha1-+3OHA66NL5/pAMM4Nt3r7ouX8j4=
-
-fsevents@~2.3.2:
-  version "2.3.2"
-  resolved "https://registry.npm.taobao.org/fsevents/download/fsevents-2.3.2.tgz?cache=0&sync_timestamp=1612537022152&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Ffsevents%2Fdownload%2Ffsevents-2.3.2.tgz"
-  integrity sha1-ilJveLj99GI7cJ4Ll1xSwkwC/Ro=
 
 function-bind@^1.1.1, function-bind@~1.1.1:
   version "1.1.1"
@@ -7637,6 +7612,11 @@ typedarray@^0.0.6:
   resolved "https://registry.npm.taobao.org/typedarray/download/typedarray-0.0.6.tgz"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
+typescript@>=3.7.0:
+  version "5.4.5"
+  resolved "https://registry.npmjs.org/typescript/-/typescript-5.4.5.tgz"
+  integrity sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==
+
 typewise-core@^1.2, typewise-core@^1.2.0:
   version "1.2.0"
   resolved "https://registry.npm.taobao.org/typewise-core/download/typewise-core-1.2.0.tgz"
@@ -8028,7 +8008,7 @@ web3-provider-engine@14.2.1:
     cross-fetch "^2.1.0"
     eth-block-tracker "^3.0.0"
     eth-json-rpc-infura "^3.1.0"
-    eth-sig-util "^1.4.2"
+    eth-sig-util "3.0.0"
     ethereumjs-block "^1.2.2"
     ethereumjs-tx "^1.2.0"
     ethereumjs-util "^5.1.5"

@@ -47,7 +47,7 @@ module.exports = {
             accounts,
         },
         metissepolia: {
-            url: 'https://sepolia.rpc.metisdevops.link',
+            url: 'https://sepolia.metisdevops.link',
             accounts,
         },
     },

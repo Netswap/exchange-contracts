@@ -20,20 +20,20 @@ async function main() {
     await tokenC.deployed();
     console.log("Test WBTC depolyed to:", tokenC.address);
 
-    const tokenD = await TestERC20.deploy('Test LINK', 'TLINK', 18);
+    const tokenD = await TestERC20.deploy('Test WETH', 'TWETH', 18);
     await tokenD.deployed();
-    console.log("Test LINK depolyed to:", tokenD.address);
+    console.log("Test WETH depolyed to:", tokenD.address);
 
-    const tokenE = await TestERC20.deploy('Test UNI', 'TUNI', 18);
+    const tokenE = await TestERC20.deploy('Test WSOL', 'TWSOL', 18);
     await tokenE.deployed();
-    console.log("Test UNI depolyed to:", tokenE.address);
+    console.log("Test WSOL depolyed to:", tokenE.address);
 
     const addresses = {
         TUSDT: tokenA.address,
         TUSDC: tokenB.address,
         TWBTC: tokenC.address,
-        TLINK: tokenD.address,
-        TUNI: tokenE.address,
+        TWETH: tokenD.address,
+        TWSOL: tokenE.address,
     };
 
     console.log(addresses);

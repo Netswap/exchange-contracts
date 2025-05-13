@@ -203,7 +203,7 @@ pragma solidity >=0.6.2;
 
 interface INetswapRouter {
     function factory() external pure returns (address);
-    function Metis() external pure returns (address);
+    function WMetis() external pure returns (address);
 
     function addLiquidity(
         address tokenA,
@@ -363,6 +363,11 @@ interface ISwapMining {
     function swap(address account, address input, address output, uint256 amount) external returns (bool);
 }
 
+interface IWMetis is IERC20Netswap {
+    function deposit() external payable;
+    function withdraw(uint256 amount) external;
+}
+
 contract Ownable {
     address private _owner;
 
@@ -410,7 +415,7 @@ contract NetswapRouter is INetswapRouter02, Ownable {
     using SafeMathNetswap for uint;
 
     address public immutable override factory;
-    address public immutable override Metis;
+    address public immutable override WMetis;
     address public override swapMining;
 
     modifier ensure(uint deadline) {
@@ -418,9 +423,9 @@ contract NetswapRouter is INetswapRouter02, Ownable {
         _;
     }
 
-    constructor(address _factory, address _Metis) public {
+    constructor(address _factory, address _WMetis) public {
         factory = _factory;
-        Metis = _Metis;
+        WMetis = _WMetis;
     }
 
     function setSwapMining(address _swapMininng) public onlyOwner {
@@ -484,16 +489,17 @@ contract NetswapRouter is INetswapRouter02, Ownable {
     ) external virtual override payable ensure(deadline) returns (uint amountToken, uint amountMetis, uint liquidity) {
         (amountToken, amountMetis) = _addLiquidity(
             token,
-            Metis,
+            WMetis,
             amountTokenDesired,
             msg.value,
             amountTokenMin,
             amountMetisMin
         );
-        address pair = NetswapLibrary.pairFor(factory, token, Metis);
+        address pair = NetswapLibrary.pairFor(factory, token, WMetis);
         TransferHelper.safeTransferFrom(token, msg.sender, pair, amountToken);
+        IWMetis(WMetis).deposit{value: amountMetis}();
         // safe transfer Metis from router to pair
-        TransferHelper.safeTransfer(Metis, pair, amountMetis);
+        assert(IWMetis(WMetis).transfer(pair, amountMetis));
         liquidity = INetswapPair(pair).mint(to);
         // refund dust metis, if any
         if (msg.value > amountMetis) TransferHelper.safeTransferMetis(msg.sender, msg.value - amountMetis);
@@ -527,7 +533,7 @@ contract NetswapRouter is INetswapRouter02, Ownable {
     ) public virtual override ensure(deadline) returns (uint amountToken, uint amountMetis) {
         (amountToken, amountMetis) = removeLiquidity(
             token,
-            Metis,
+            WMetis,
             liquidity,
             amountTokenMin,
             amountMetisMin,
@@ -535,6 +541,7 @@ contract NetswapRouter is INetswapRouter02, Ownable {
             deadline
         );
         TransferHelper.safeTransfer(token, to, amountToken);
+        IWMetis(WMetis).withdraw(amountMetis);
         TransferHelper.safeTransferMetis(to, amountMetis);
     }
     function removeLiquidityWithPermit(
@@ -561,7 +568,7 @@ contract NetswapRouter is INetswapRouter02, Ownable {
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
     ) external virtual override returns (uint amountToken, uint amountMetis) {
-        address pair = NetswapLibrary.pairFor(factory, token, Metis);
+        address pair = NetswapLibrary.pairFor(factory, token, WMetis);
         uint value = approveMax ? uint(-1) : liquidity;
         INetswapPair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         (amountToken, amountMetis) = removeLiquidityMetis(token, liquidity, amountTokenMin, amountMetisMin, to, deadline);
@@ -578,7 +585,7 @@ contract NetswapRouter is INetswapRouter02, Ownable {
     ) public virtual override ensure(deadline) returns (uint amountMetis) {
         (, amountMetis) = removeLiquidity(
             token,
-            Metis,
+            WMetis,
             liquidity,
             amountTokenMin,
             amountMetisMin,
@@ -586,6 +593,7 @@ contract NetswapRouter is INetswapRouter02, Ownable {
             deadline
         );
         TransferHelper.safeTransfer(token, to, IERC20Netswap(token).balanceOf(address(this)));
+        IWMetis(WMetis).withdraw(amountMetis);
         TransferHelper.safeTransferMetis(to, amountMetis);
     }
     function removeLiquidityMetisWithPermitSupportingFeeOnTransferTokens(
@@ -597,7 +605,7 @@ contract NetswapRouter is INetswapRouter02, Ownable {
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
     ) external virtual override returns (uint amountMetis) {
-        address pair = NetswapLibrary.pairFor(factory, token, Metis);
+        address pair = NetswapLibrary.pairFor(factory, token, WMetis);
         uint value = approveMax ? uint(-1) : liquidity;
         INetswapPair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
         amountMetis = removeLiquidityMetisSupportingFeeOnTransferTokens(
@@ -658,11 +666,12 @@ contract NetswapRouter is INetswapRouter02, Ownable {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[0] == Metis, 'NetswapRouter: INVALID_PATH');
+        require(path[0] == WMetis, 'NetswapRouter: INVALID_PATH');
         amounts = NetswapLibrary.getAmountsOut(factory, msg.value, path, INetswapFactory(factory).feeRate());
         require(amounts[amounts.length - 1] >= amountOutMin, 'NetswapRouter: INSUFFICIENT_OUTPUT_AMOUNT');
         // safe transfer metis from router to pair
-        TransferHelper.safeTransfer(Metis, NetswapLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
+        IWMetis(WMetis).deposit{value: amounts[0]}();
+        TransferHelper.safeTransfer(WMetis, NetswapLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, to);
     }
     function swapTokensForExactMetis(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
@@ -672,13 +681,14 @@ contract NetswapRouter is INetswapRouter02, Ownable {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[path.length - 1] == Metis, 'NetswapRouter: INVALID_PATH');
+        require(path[path.length - 1] == WMetis, 'NetswapRouter: INVALID_PATH');
         amounts = NetswapLibrary.getAmountsIn(factory, amountOut, path, INetswapFactory(factory).feeRate());
         require(amounts[0] <= amountInMax, 'NetswapRouter: EXCESSIVE_INPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, NetswapLibrary.pairFor(factory, path[0], path[1]), amounts[0]
         );
         _swap(amounts, path, address(this));
+        IWMetis(WMetis).withdraw(amounts[amounts.length - 1]);
         TransferHelper.safeTransferMetis(to, amounts[amounts.length - 1]);
     }
     function swapExactTokensForMetis(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
@@ -688,13 +698,14 @@ contract NetswapRouter is INetswapRouter02, Ownable {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[path.length - 1] == Metis, 'NetswapRouter: INVALID_PATH');
+        require(path[path.length - 1] == WMetis, 'NetswapRouter: INVALID_PATH');
         amounts = NetswapLibrary.getAmountsOut(factory, amountIn, path, INetswapFactory(factory).feeRate());
         require(amounts[amounts.length - 1] >= amountOutMin, 'NetswapRouter: INSUFFICIENT_OUTPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, NetswapLibrary.pairFor(factory, path[0], path[1]), amounts[0]
         );
         _swap(amounts, path, address(this));
+        IWMetis(WMetis).withdraw(amounts[amounts.length - 1]);
         TransferHelper.safeTransferMetis(to, amounts[amounts.length - 1]);
     }
     function swapMetisForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
@@ -705,11 +716,12 @@ contract NetswapRouter is INetswapRouter02, Ownable {
         ensure(deadline)
         returns (uint[] memory amounts)
     {
-        require(path[0] == Metis, 'NetswapRouter: INVALID_PATH');
+        require(path[0] == WMetis, 'NetswapRouter: INVALID_PATH');
         amounts = NetswapLibrary.getAmountsIn(factory, amountOut, path, INetswapFactory(factory).feeRate());
         require(amounts[0] <= msg.value, 'NetswapRouter: EXCESSIVE_INPUT_AMOUNT');
         // safe transfer metis from router to pair
-        TransferHelper.safeTransfer(Metis, NetswapLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
+        IWMetis(WMetis).deposit{value: amounts[0]}();
+        TransferHelper.safeTransfer(WMetis, NetswapLibrary.pairFor(factory, path[0], path[1]), amounts[0]);
         _swap(amounts, path, to);
         // refund dust metis, if any
         if (msg.value > amounts[0]) TransferHelper.safeTransferMetis(msg.sender, msg.value - amounts[0]);
@@ -767,10 +779,11 @@ contract NetswapRouter is INetswapRouter02, Ownable {
         payable
         ensure(deadline)
     {
-        require(path[0] == Metis, 'NetswapRouter: INVALID_PATH');
+        require(path[0] == WMetis, 'NetswapRouter: INVALID_PATH');
         uint amountIn = msg.value;
+        IWMetis(WMetis).deposit{value: amountIn}();
         // safe transfer metis from router to pair
-        TransferHelper.safeTransfer(Metis, NetswapLibrary.pairFor(factory, path[0], path[1]), amountIn);
+        assert(IWMetis(WMetis).transfer(NetswapLibrary.pairFor(factory, path[0], path[1]), amountIn));
         uint balanceBefore = IERC20Netswap(path[path.length - 1]).balanceOf(to);
         _swapSupportingFeeOnTransferTokens(path, to);
         require(
@@ -790,13 +803,14 @@ contract NetswapRouter is INetswapRouter02, Ownable {
         override
         ensure(deadline)
     {
-        require(path[path.length - 1] == Metis, 'NetswapRouter: INVALID_PATH');
+        require(path[path.length - 1] == WMetis, 'NetswapRouter: INVALID_PATH');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, NetswapLibrary.pairFor(factory, path[0], path[1]), amountIn
         );
         _swapSupportingFeeOnTransferTokens(path, address(this));
-        uint amountOut = IERC20Netswap(Metis).balanceOf(address(this));
+        uint amountOut = IERC20Netswap(WMetis).balanceOf(address(this));
         require(amountOut >= amountOutMin, 'NetswapRouter: INSUFFICIENT_OUTPUT_AMOUNT');
+        IWMetis(WMetis).withdraw(amountOut);
         TransferHelper.safeTransferMetis(to, amountOut);
     }
 

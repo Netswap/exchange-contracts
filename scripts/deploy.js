@@ -12,7 +12,7 @@ async function main() {
     console.log("NetswapFactory depolyed to:", factory.address);
 
     const Router = await hre.ethers.getContractFactory('NetswapRouter');
-    const router = await Router.deploy(factory.address, "0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000");
+    const router = await Router.deploy(factory.address, "0xedbFe547ed7bB6fb7c8D5a773AbbB1dC48B540B7");
     await router.deployed();
     console.log("NetswapRouter depolyed to:", router.address);
 

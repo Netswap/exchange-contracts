@@ -50,6 +50,10 @@ module.exports = {
             url: 'https://sepolia.metisdevops.link',
             accounts,
         },
+	hyperiontest: {
+	    url: 'https://hyperion-testnet.metisdevops.link',
+	    accounts,
+	},
     },
     solidity: {
         version: "0.6.12",
